@@ -1,3 +1,8 @@
+/*
+Home Screen
+- List the available timer options
+- Navigates to respective screens on button press
+*/
 import {
   View,
   Text,
