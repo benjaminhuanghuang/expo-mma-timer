@@ -1,4 +1,4 @@
-# Navigation
+# Layout and Navigation
 
 ## Reference
 
