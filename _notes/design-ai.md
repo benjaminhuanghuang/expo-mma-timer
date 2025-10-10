@@ -1,4 +1,4 @@
-# AI design
+# Design by AI
 
 // ==========================================
 // FOLDER STRUCTURE (Expo Router)

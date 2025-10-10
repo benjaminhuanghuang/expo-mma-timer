@@ -1,6 +1,8 @@
 # Timerkit
 
-Timers for study, workout, spar ...
+This app includes various time-related features, such as a stopwatch, Pomodoro timer, and HIIT timer.
+The home screen displays a list of these functions for users to choose from.
+When a user selects one, the corresponding timer opens, allowing them to either start the timer or adjust its settings.
 
 - Expo 53 + React Native
 - Typescript
