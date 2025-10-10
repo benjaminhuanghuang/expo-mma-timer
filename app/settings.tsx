@@ -1,16 +1,33 @@
-
-import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Pressable, TextInput, Button, ActivityIndicator, Alert } from 'react-native';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getTimerButtons, updateTimerButtonTitle, TimerButton } from './services/firebase';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Pressable,
+  TextInput,
+  Button,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getTimerButtons,
+  updateTimerButtonTitle,
+  TimerButton,
+} from "../services/firebase";
 
 export default function SettingsScreen() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<TimerButton | null>(null);
   const [newTitle, setNewTitle] = useState("");
 
-  const { data: buttons, isLoading, error } = useQuery({
-    queryKey: ['timerButtons'],
+  const {
+    data: buttons,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["timerButtons"],
     queryFn: getTimerButtons,
   });
 
@@ -18,14 +35,14 @@ export default function SettingsScreen() {
     mutationFn: updateTimerButtonTitle,
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['timerButtons'] });
+      queryClient.invalidateQueries({ queryKey: ["timerButtons"] });
       setEditing(null);
       setNewTitle("");
       Alert.alert("Success", "The button title has been updated.");
     },
     onError: (err) => {
       Alert.alert("Error", `Failed to update: ${err.message}`);
-    }
+    },
   });
 
   const handleEdit = (button: TimerButton) => {
@@ -72,8 +89,16 @@ export default function SettingsScreen() {
           placeholder="Enter new title"
         />
         <View style={styles.buttonContainer}>
-          <Button title="Cancel" onPress={() => setEditing(null)} color="#e74c3c" />
-          <Button title={mutation.isPending ? 'Saving...' : 'Save'} onPress={handleSave} disabled={mutation.isPending} />
+          <Button
+            title="Cancel"
+            onPress={() => setEditing(null)}
+            color="#e74c3c"
+          />
+          <Button
+            title={mutation.isPending ? "Saving..." : "Save"}
+            onPress={handleSave}
+            disabled={mutation.isPending}
+          />
         </View>
       </View>
     );
@@ -85,7 +110,9 @@ export default function SettingsScreen() {
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
       contentContainerStyle={styles.container}
-      ListHeaderComponent={<Text style={styles.title}>Tap a button to edit its title</Text>}
+      ListHeaderComponent={
+        <Text style={styles.title}>Tap a button to edit its title</Text>
+      }
     />
   );
 }
@@ -96,17 +123,17 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   item: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
@@ -116,18 +143,18 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     padding: 12,
     borderRadius: 8,
     fontSize: 16,
     marginBottom: 16,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   errorText: {
-    color: 'red',
+    color: "red",
     fontSize: 18,
-  }
+  },
 });

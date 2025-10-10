@@ -1,13 +1,24 @@
-import { View, Text, Pressable, StyleSheet, FlatList, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { getTimerButtons, TimerButton } from "./services/firebase";
+import { getTimerButtons, TimerButton } from "../services/firebase";
 
 export default function HomeScreen() {
   const router = useRouter();
 
-  const { data: buttons, isLoading, error } = useQuery({
+  const {
+    data: buttons,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["timerButtons"],
     queryFn: getTimerButtons,
   });
@@ -63,8 +74,8 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   button: {
     flex: 1,
@@ -85,8 +96,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   errorText: {
-    color: 'red',
+    color: "red",
     fontSize: 18,
     marginBottom: 8,
-  }
+  },
 });
