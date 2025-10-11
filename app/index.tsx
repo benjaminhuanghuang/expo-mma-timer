@@ -1,34 +1,28 @@
 /*
 Home Screen
+
 - List the available timer options
 - Navigates to respective screens on button press
 */
-import {
-  Text,
-  Pressable,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-} from "react-native";
+import { Text, Pressable, StyleSheet, FlatList } from "react-native";
 import { useRouter } from "expo-router";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
-import { getTimerButtons, TimerButton } from "../services/firebase";
+import { TimerButton } from "@/types/timerButton";
 import { useTheme } from "@/context/ThemeContext";
 import ScreenView from "@/components/ScreenView";
+
 export default function HomeScreen() {
   const { colors } = useTheme();
-
+  const buttons: TimerButton[] = [
+    { id: "1", icon: "stopwatch-20", title: "HIIT Timer", path: "/hiit/list" },
+    {
+      id: "2",
+      icon: "hourglass",
+      title: "Countdown Timer",
+      path: "/countdown/list",
+    },
+  ];
   const router = useRouter();
-
-  const {
-    data: buttons,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["timerButtons"],
-    queryFn: getTimerButtons,
-  });
 
   const renderItem = ({ item }: { item: TimerButton }) => (
     <Pressable
@@ -44,24 +38,6 @@ export default function HomeScreen() {
       <Text style={styles.buttonText}>{item.title}</Text>
     </Pressable>
   );
-
-  if (isLoading) {
-    return (
-      <ScreenView>
-        <ActivityIndicator size="large" color="#3498db" />
-        <Text>Loading...</Text>
-      </ScreenView>
-    );
-  }
-
-  if (error) {
-    return (
-      <ScreenView>
-        <Text style={styles.errorText}>Error fetching data</Text>
-        <Text>{error.message}</Text>
-      </ScreenView>
-    );
-  }
 
   return (
     <ScreenView>

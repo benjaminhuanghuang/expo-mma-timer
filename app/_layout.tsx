@@ -1,4 +1,4 @@
-import { Stack, router } from "expo-router";
+import { Stack, router, usePathname } from "expo-router";
 import { SafeAreaView, Pressable } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { FontAwesome } from "@expo/vector-icons";
@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/context/ThemeContext";
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
+  const pathname = usePathname();
+
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
@@ -18,7 +20,13 @@ export default function RootLayout() {
               headerTintColor: "#fff",
               headerTitleAlign: "center",
               headerRight: () => (
-                <Pressable onPress={() => router.push("/settings")}>
+                <Pressable
+                  onPress={() => {
+                    if (pathname !== "/settings") {
+                      router.push("/settings");
+                    }
+                  }}
+                >
                   <FontAwesome
                     name="cog"
                     size={24}

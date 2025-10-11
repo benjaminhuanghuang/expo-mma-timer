@@ -1,66 +1,72 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
-import { Audio } from "expo-av";
+import { useAudioPlayer } from "expo-audio";
 
 export default function CountDownRunner() {
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const soundRef = useRef<Audio.Sound | null>(null);
   const [flash, setFlash] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const { duration } = useLocalSearchParams();
+  const { duration } = useLocalSearchParams<{ duration?: string }>();
+
+  const player = useAudioPlayer(require("../../assets/beep.mp3"));
 
   useEffect(() => {
-    setSecondsLeft(parseInt(duration as string, 10));
+    // Parse duration safely
+    const total = parseInt(duration || "0", 10);
+    if (isNaN(total) || total <= 0) return;
+
+    setSecondsLeft(total);
 
     timerRef.current = setInterval(() => {
       setSecondsLeft((prev) => {
         const next = prev - 1;
+
         if (next <= 3 && next > 0) {
-          playBeep(); // Play sound in the last seconds
+          playBeep();
           triggerFlash();
         }
 
-        // tear down when the countdown is finished
         if (next <= 0) {
-          clearInterval(timerRef.current!);
-          unloadSound();
+          cleanup();
           router.back();
           return 0;
         }
+
         return next;
       });
     }, 1000);
 
-    return () => {
-      clearInterval(timerRef.current!);
-      unloadSound();
-    };
+    return cleanup;
   }, [duration]);
 
-  const playBeep = async () => {
-    if (!soundRef.current) {
-      const { sound } = await Audio.Sound.createAsync(
-        require("../../assets/beep.mp3")
-      );
-      soundRef.current = sound;
+  const cleanup = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-    await soundRef.current.replayAsync();
+    player.release?.(); // ensures proper cleanup
   };
+
+  const playBeep = async () => {
+    try {
+      // Restart sound from beginning each time
+      player.seekTo(0);
+      await player.play();
+    } catch (error) {
+      console.error("Failed to play beep:", error);
+    }
+  };
+
   const triggerFlash = () => {
     setFlash(true);
-    setTimeout(() => setFlash(false), 200); // Flash for 200ms
+    setTimeout(() => setFlash(false), 200);
   };
-  const unloadSound = async () => {
-    if (soundRef.current) {
-      await soundRef.current.unloadAsync();
-      soundRef.current = null;
-    }
-  };
+
   const handleCancel = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    router.back(); // Go back to the previous screen
+    cleanup();
+    router.back();
   };
 
   return (
@@ -71,6 +77,7 @@ export default function CountDownRunner() {
       ]}
     >
       <Text style={styles.timerText}>{secondsLeft}s</Text>
+
       <Pressable
         style={({ pressed }) => [
           styles.cancelButton,
@@ -83,6 +90,7 @@ export default function CountDownRunner() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
