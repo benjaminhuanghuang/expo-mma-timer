@@ -1,48 +1,20 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { useAudioPlayer } from "expo-audio";
 
 export default function CountDownRunner() {
+  const [isReady, setIsReady] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [flash, setFlash] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { duration } = useLocalSearchParams<{ duration?: string }>();
 
+  // Not sure whether useAudioPlayer returns new instance on every render?
   const player = useAudioPlayer(require("../../assets/beep.mp3"));
 
-  // Start countdown
-  useEffect(() => {
-    const total = parseInt(duration || "0", 10);
-    if (isNaN(total) || total <= 0) return;
-
-    setSecondsLeft(total);
-
-    timerRef.current = setInterval(() => {
-      setSecondsLeft((prev) => {
-        const next = prev - 1;
-
-        if (next > 0 && next <= 3) {
-          playBeep();
-          triggerFlash();
-        }
-
-        if (next <= 0) {
-          cleanup();
-          router.back();
-          return 0;
-        }
-
-        return next;
-      });
-    }, 1000);
-
-    return cleanup;
-  }, [duration]);
-
-  // ✅ Play beep
-  const playBeep = async () => {
+  const playBeep = useCallback(async () => {
     if (!player) return;
     try {
       await player.seekTo(0); // restart audio
@@ -50,7 +22,39 @@ export default function CountDownRunner() {
     } catch (error) {
       console.error("Failed to play beep:", error);
     }
-  };
+  }, [player]);
+
+  // Start countdown
+  useEffect(() => {
+    const total = parseInt(duration || "0", 10);
+    if (isNaN(total) || total <= 0) return;
+
+    setSecondsLeft(total);
+    setIsReady(true);
+
+    timerRef.current = setInterval(() => {
+      setSecondsLeft((prev) => prev - 1);
+    }, 1000);
+
+    return cleanup;
+  }, [duration]);
+
+  /*
+    Without isReady guard, this effect would run on initial render
+    and immediately trigger the countdown end logic if duration is 0.
+  */
+  useEffect(() => {
+    if (!isReady) return;
+    if (secondsLeft > 0 && secondsLeft <= 3) {
+      playBeep();
+      triggerFlash();
+    }
+
+    if (secondsLeft <= 0) {
+      cleanup();
+      router.back();
+    }
+  }, [secondsLeft, playBeep, isReady]);
 
   const triggerFlash = () => {
     setFlash(true);
