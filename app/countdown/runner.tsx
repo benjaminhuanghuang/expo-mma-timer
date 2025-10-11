@@ -12,8 +12,8 @@ export default function CountDownRunner() {
 
   const player = useAudioPlayer(require("../../assets/beep.mp3"));
 
+  // Start countdown
   useEffect(() => {
-    // Parse duration safely
     const total = parseInt(duration || "0", 10);
     if (isNaN(total) || total <= 0) return;
 
@@ -23,7 +23,7 @@ export default function CountDownRunner() {
       setSecondsLeft((prev) => {
         const next = prev - 1;
 
-        if (next <= 3 && next > 0) {
+        if (next > 0 && next <= 3) {
           playBeep();
           triggerFlash();
         }
@@ -41,18 +41,11 @@ export default function CountDownRunner() {
     return cleanup;
   }, [duration]);
 
-  const cleanup = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    player.release?.(); // ensures proper cleanup
-  };
-
+  // ✅ Play beep
   const playBeep = async () => {
+    if (!player) return;
     try {
-      // Restart sound from beginning each time
-      player.seekTo(0);
+      await player.seekTo(0); // restart audio
       await player.play();
     } catch (error) {
       console.error("Failed to play beep:", error);
@@ -62,6 +55,13 @@ export default function CountDownRunner() {
   const triggerFlash = () => {
     setFlash(true);
     setTimeout(() => setFlash(false), 200);
+  };
+
+  const cleanup = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
   };
 
   const handleCancel = () => {
@@ -96,7 +96,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
   },
   normalBackground: {
     backgroundColor: "#ffffff",
