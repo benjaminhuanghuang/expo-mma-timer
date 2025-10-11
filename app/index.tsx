@@ -4,7 +4,6 @@ Home Screen
 - Navigates to respective screens on button press
 */
 import {
-  View,
   Text,
   Pressable,
   StyleSheet,
@@ -15,8 +14,11 @@ import { useRouter } from "expo-router";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { getTimerButtons, TimerButton } from "../services/firebase";
-
+import { useTheme } from "@/context/ThemeContext";
+import ScreenView from "@/components/ScreenView";
 export default function HomeScreen() {
+  const { colors } = useTheme();
+
   const router = useRouter();
 
   const {
@@ -45,30 +47,35 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
+      <ScreenView>
         <ActivityIndicator size="large" color="#3498db" />
         <Text>Loading...</Text>
-      </View>
+      </ScreenView>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.centerContainer}>
+      <ScreenView>
         <Text style={styles.errorText}>Error fetching data</Text>
         <Text>{error.message}</Text>
-      </View>
+      </ScreenView>
     );
   }
 
   return (
-    <FlatList
-      data={buttons}
-      numColumns={2}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      contentContainerStyle={styles.container}
-    />
+    <ScreenView>
+      <FlatList
+        data={buttons}
+        numColumns={2}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={[
+          styles.container,
+          { backgroundColor: colors.background },
+        ]}
+      />
+    </ScreenView>
   );
 }
 
